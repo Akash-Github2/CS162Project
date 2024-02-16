@@ -31,6 +31,12 @@ def model_and_tokenizer_setup(model_id_or_path):
     # for both model and tokenizer load operation, as 
     # transformer verison is 4.36.2 < 4.37.0
     
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    model = AutoModelForCausalLM.from_pretrained(model_id_or_path, trust_remote_code=True).to(torch.float16)
+    model.flash_attention = 2
+    tokenizer = AutoTokenizer.from_pretrained(model_id_or_path, padding='left', pad_token="<|endoftext|>", trust_remote_code=True)
+
     # End of TODO.
     ##################################################
 
