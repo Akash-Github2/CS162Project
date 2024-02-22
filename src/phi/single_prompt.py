@@ -23,6 +23,10 @@ def single_prompt(model, tokenizer, prompt):
     # fn. You need to tokenize a single prompt, generate outputs 
     # for it, and then decode the output back to regular text. 
 
+    tokens = tokenizer(prompt, return_tensors="pt").to("cuda")
+    generated_output = model.generate(**tokens, use_cache=True, max_new_tokens=10)
+    text = tokenizer.batch_decode(generated_output)[0]
+
     # End of TODO.
     #############################################################
     print("Model Response: ", text)
