@@ -39,32 +39,43 @@ def batch_prompt(model, tokenizer, annotations_filepath, output_filepath, prompt
         # is what should be the output of the program snippet 
         # within TODO
 
-        print("\n\nBATCH")
-        print(batch)
-        tokens = tokenizer(batch[0], return_tensors="pt").to("cuda")
-        tokenizer.pad_token_id = tokenizer.eos_token_id
-
-        generated_output = model.generate(**tokens, max_new_tokens=20)
-        output_texts = tokenizer.batch_decode(generated_output)[0]
-        print("\n\nGENERATED OUTPUT")
-        print(tokenizer.batch_decode(generated_output))
+        # print("\n\nBATCH")
+        # print(batch)
+        
+        for inp in batch:
+            tokens = tokenizer(inp, return_tensors="pt")
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            generated_output = model.generate(**tokens, max_new_tokens=10, pad_token_id=50256)
+            output_texts.append(tokenizer.batch_decode(generated_output)[0])
+            
+        # print(output_texts)
+        # print("\n\nGENERATED OUTPUT")
+        # print(tokenizer.batch_decode(generated_output))
         # End of TODO.
         ##################################################
 
         for output_text in output_texts:
             final_response = output_text.split("Output:")[-1].split("<|endoftext|>")[0]
+            # print(final_response)
             tmp_response = final_response.lower()
             if "refutes" in tmp_response or "false" in tmp_response:
                 predicted_label = "REFUTES"
             else:
                 predicted_label = "SUPPORTS"
+            # print(output_texts)
+            # print(predicted_label)
+            # print("END!!!!")
+            # output_data.append({
+            #     "final_response":final_response,
+            #     "label":predicted_label
+            #     })
+            output_data.append(predicted_label)
+        
+    with open(output_filepath, 'w') as f:
+        for item in output_data:
+            f.write(item + '\n')
 
-            output_data.append({
-                "final_response":final_response,
-                "label":predicted_label
-                })
-
-    dump_jsonl(output_data, output_filepath)
+    # dump_jsonl(output_data, output_filepath)
 
 def main(args):
     model, tokenizer = model_and_tokenizer_setup(args.model_id_or_path)
